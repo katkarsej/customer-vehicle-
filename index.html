@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ProFlux Customer & Vehicle Desk</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+  <main class="app-shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <span class="brand-mark">PF</span>
+        <div>
+          <h1>ProFlux</h1>
+          <p>Customer operations</p>
+        </div>
+      </div>
+      <nav class="nav-tabs" aria-label="Workspace">
+        <button class="nav-tab active" data-view="customers"><i class="fas fa-users"></i><span>Customers</span></button>
+        <button class="nav-tab" data-view="vehicles"><i class="fas fa-truck"></i><span>Vehicles</span></button>
+        <button class="nav-tab" data-view="kyc"><i class="fas fa-shield-alt"></i><span>KYC</span></button>
+        <button class="nav-tab" data-view="issues"><i class="fas fa-headset"></i><span>Issues</span></button>
+      </nav>
+      <div class="sync-card">
+        <span class="sync-dot" id="syncDot"></span>
+        <div>
+          <strong id="syncTitle">Storage ready</strong>
+          <p id="syncText">SQLite when server is online, browser backup always on.</p>
+        </div>
+      </div>
+    </aside>
+
+    <section class="workspace">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">Live desk</p>
+          <h2 id="viewTitle">Customers</h2>
+        </div>
+        <div class="top-actions">
+          <button class="icon-btn" id="exportBtn" title="Export data"><i class="fas fa-download"></i></button>
+          <button class="btn secondary" id="sampleBtn"><i class="fas fa-database"></i> Sample Data</button>
+          <button class="btn primary" id="primaryActionBtn"><i class="fas fa-plus"></i> New Customer</button>
+        </div>
+      </header>
+
+      <section class="metrics">
+        <article class="metric"><span>Total Customers</span><strong id="totalCustomers">0</strong></article>
+        <article class="metric"><span>Vehicles Linked</span><strong id="totalVehicles">0</strong></article>
+        <article class="metric"><span>KYC Verified</span><strong id="verifiedCustomers">0</strong></article>
+        <article class="metric"><span>Open Issues</span><strong id="openIssues">0</strong></article>
+      </section>
+
+      <section class="filters">
+        <label class="search-box">
+          <i class="fas fa-search"></i>
+          <input id="searchInput" type="search" placeholder="Search name, phone, Aadhaar, PIN, vehicle, issue..." />
+        </label>
+        <select id="statusFilter">
+          <option value="all">All status</option>
+          <option value="verified">Verified</option>
+          <option value="pending">Pending</option>
+          <option value="not-started">Not started</option>
+          <option value="open">Open issues</option>
+        </select>
+        <select id="typeFilter">
+          <option value="all">All types</option>
+          <option value="private">Private</option>
+          <option value="commercial">Commercial</option>
+        </select>
+      </section>
+
+      <section class="view-panel active" id="customersView">
+        <div class="section-heading">
+          <div>
+            <h3>Customer Section</h3>
+            <p>Manage details, KYC documents, linked vehicles, and contact issues from one place.</p>
+          </div>
+        </div>
+        <div class="cards-grid" id="customerCards"></div>
+      </section>
+
+      <section class="view-panel" id="vehiclesView">
+        <div class="section-heading">
+          <div>
+            <h3>Vehicle Section</h3>
+            <p>Keep each vehicle linked to the right customer with registration, insurance, and service state.</p>
+          </div>
+          <button class="btn primary compact" data-open="vehicle"><i class="fas fa-plus"></i> Vehicle</button>
+        </div>
+        <div class="table-card">
+          <table>
+            <thead>
+              <tr><th>Vehicle</th><th>Owner</th><th>Details</th><th>Status</th><th>Actions</th></tr>
+            </thead>
+            <tbody id="vehicleRows"></tbody>
+          </table>
+        </div>
+      </section>
+<section class="view-panel" id="kycView">
+        <div class="section-heading">
+          <div>
+            <h3>KYC Verification</h3>
+            <p>Aadhaar, PAN, PIN code, license, and address checks are tracked like a verification process.</p>
+          </div>
+        </div>
+        <div class="kyc-board" id="kycBoard"></div>
+      </section>
+
+      <section class="view-panel" id="issuesView">
+        <div class="section-heading">
+          <div>
+            <h3>Contact Issues</h3>
+            <p>Add customer complaints, follow-ups, service calls, and close them when solved.</p>
+          </div>
+          <button class="btn primary compact" data-open="issue"><i class="fas fa-plus"></i> Issue</button>
+        </div>
+        <div class="issue-list" id="issueList"></div>
+      </section>
+    </section>
+  </main>
+
+  <div class="modal" id="customerModal">
+    <div class="modal-content wide">
+      <div class="modal-header">
+        <h3 id="customerModalTitle">Add Customer</h3>
+        <button class="close-btn" data-close="customerModal"><i class="fas fa-times"></i></button>
+      </div>
+      <form id="customerForm" class="form-grid">
+        <input type="hidden" id="customerId" />
+        <label>Full Name *<input id="customerName" required /></label>
+        <label>Type *<select id="customerType" required><option value="private">Private</option><option value="commercial">Commercial</option></select></label>
+        <label>Phone *<input id="customerPhone" maxlength="10" required /></label>
+        <label>Email *<input id="customerEmail" type="email" required /></label>
+        <label>Aadhaar Number *<input id="customerAadhaar" maxlength="12" placeholder="12 digits" required /></label>
+        <label>PAN Number<input id="customerPan" maxlength="10" placeholder="ABCDE1234F" /></label>
+        <label>PIN Code *<input id="customerPin" maxlength="6" required /></label>
+        <label>Driving License<input id="customerLicense" /></label>
+        <label class="span-2">Address *<textarea id="customerAddress" required></textarea></label>
+        <div class="check-row span-2">
+          <label><input type="checkbox" id="aadhaarVerified" /> Aadhaar verified</label>
+          <label><input type="checkbox" id="pinVerified" /> PIN verified</label>
+          <label><input type="checkbox" id="addressVerified" /> Address verified</label>
+        </div>
+        <div class="form-actions span-2">
+          <button type="button" class="btn secondary" data-close="customerModal">Cancel</button>
+          <button type="submit" class="btn primary">Save Customer</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="modal" id="vehicleModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="vehicleModalTitle">Add Vehicle</h3>
+        <button class="close-btn" data-close="vehicleModal"><i class="fas fa-times"></i></button>
+    </div>
+      <form id="vehicleForm" class="form-grid">
+        <input type="hidden" id="vehicleId" />
+        <label>Owner Type *
+          <select id="vehicleOwnerMode" required>
+            <option value="customer">Link existing customer</option>
+            <option value="custom">Custom owner</option>
+          </select>
+        </label>
+        <label id="vehicleOwnerSelectWrap">Existing Customer<select id="vehicleOwner"></select></label>
+        <label class="owner-custom-field">Owner Name *<input id="vehicleOwnerName" placeholder="Enter owner name" /></label>
+        <label class="owner-custom-field">Owner Phone<input id="vehicleOwnerPhone" maxlength="10" placeholder="10 digit phone" /></label>
+        <label>Registration *<input id="vehicleNumber" placeholder="MH12AB1234" required /></label>
+        <label>Vehicle Type *<select id="vehicleType" required><option>Truck</option><option>Tempo</option><option>Car</option><option>Two Wheeler</option><option>Bus</option></select></label>
+        <label>Model<input id="vehicleModel" /></label>
+        <label>Fuel<select id="vehicleFuel"><option>Diesel</option><option>Petrol</option><option>CNG</option><option>EV</option></select></label>
+        <label>Chassis No.<input id="vehicleChassis" /></label>
+        <label>Insurance Expiry<input id="vehicleInsurance" type="date" /></label>
+        <label class="span-2">Status<select id="vehicleStatus"><option value="active">Active</option><option value="service">In Service</option><option value="hold">On Hold</option></select></label>
+        <div class="form-actions span-2">
+          <button type="button" class="btn secondary" data-close="vehicleModal">Cancel</button>
+          <button type="submit" class="btn primary">Save Vehicle</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="modal" id="issueModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="issueModalTitle">Add Contact Issue</h3>
+        <button class="close-btn" data-close="issueModal"><i class="fas fa-times"></i></button>
+      </div>
+      <form id="issueForm" class="form-grid">
+        <input type="hidden" id="issueId" />
+        <label>Customer *<select id="issueCustomer" required></select></label>
+        <label>Vehicle<select id="issueVehicle"><option value="">No vehicle</option></select></label>
+        <label>Category<select id="issueCategory"><option>Call back</option><option>Document missing</option><option>Vehicle service</option><option>Payment</option><option>Other</option></select></label>
+        <label>Priority<select id="issuePriority"><option value="low">Low</option><option value="medium">Medium</option><option value="high">High</option></select></label>
+        <label>Status<select id="issueStatus"><option value="open">Open</option><option value="progress">In Progress</option><option value="closed">Closed</option></select></label>
+        <label>Due Date<input id="issueDue" type="date" /></label>
+        <label class="span-2">Notes<textarea id="issueNote" required></textarea></label>
+        <div class="form-actions span-2">
+          <button type="button" class="btn secondary" data-close="issueModal">Cancel</button>
+          <button type="submit" class="btn primary">Save Issue</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="drawer" id="customerDrawer">
+    <div class="drawer-panel">
+      <div class="drawer-header">
+        <div>
+          <p class="eyebrow">Single customer view</p>
+          <h3 id="drawerName">Customer</h3>
+        </div>
+        <button class="close-btn" id="drawerClose"><i class="fas fa-times"></i></button>
+      </div>
+      <div id="drawerBody"></div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
